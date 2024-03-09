@@ -5,10 +5,71 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import Main from './components/Main.vue'
-import Title from './components/Title.vue'
+<script lang="ts">
+import { defineComponent } from 'vue';
+import Main from './components/Main.vue';
+import Title from './components/Title.vue';
+export default defineComponent({
+  name : 'app',
+  components : {
+    Title,
+    Main,
+  },
+  data() {
+    return {
+      page: 0,
+      lastPage: 0,
+    }
+  },
+  mounted() {
+    // 페이지를 감싸고 있는 영역 선택 (클래스명이 'wrap'인 첫 번째 요소)
+    const wrap = this.$refs.wrap as HTMLElement;
+  
+    // 각 페이지를 담고 있는 컨테이너들을 선택 (클래스명이 'container'인 모든 요소들)
+    const container = document.getElementsByClassName('container');
+  
+    this.lastPage = container.length - 1; // 마지막 페이지의 인덱스
 
+    // 스크롤 이벤트 리스너 등록
+    const handleWheel = (e:WheelEvent) => {
+      // 스크롤 방향에 따라 페이지 위치 업데이트
+      if(e.deltaY > 0){
+        this.page++;
+      }else if(e.deltaY < 0){
+        this.page--;
+      }
+
+      // 페이지 범위 체크 (음수인 경우 0, 마지막 페이지를 초과하는 경우 마지막 페이지로 설정)
+      if (this.page < 0){
+        this.page = 0;
+      }else if(this.page > this.lastPage){
+        this.page = this.lastPage;
+      }
+
+      wrap.style.top = this.page * -99.9 + 'vh'; // 페이지에 따라 'wrap' 요소의 top 값을 조절하여 페이지를 표시
+    };
+      window.addEventListener('wheel', handleWheel, { passive: true });
+
+      const initScrollEvent = new WheelEvent('wheel', { deltaY: 0 });
+      window.dispatchEvent(initScrollEvent);
+    },
+    methods: {
+      downEvent() {
+        this.page++;
+        if(this.page > this.lastPage){
+          this.page = this.lastPage;
+        }
+        (this.$refs.wrap as HTMLElement).style.top = (this.page as number) * -99.9 + 'vh';
+      },
+      upEvent() {
+        this.page--;
+        if (this.page < 0) {
+          this.page = 0; // 페이지가 최소 페이지보다 작아지지 않도록 보정합니다.
+        }
+        (this.$refs.wrap as HTMLElement).style.top = (this.page as number) * -99.9 + 'vh'; // 페이지가 올라가는 효과를 적용합니다.
+      }
+    },
+})
 
 </script>
 
