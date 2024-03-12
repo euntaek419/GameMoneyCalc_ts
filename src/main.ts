@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import store from './store/store'
+import Store from './store/store.d.ts'
 
 createApp(App)
-.use(store)
+.use(Store)
 .mount('#app')
