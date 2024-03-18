@@ -1,14 +1,156 @@
+<template>
+  <div>
+  <!-- <div class="wrap"> -->
+    <div class="InfoBox upZ-index">
+      <div class="InfoText">  
+        구매할 정보를 기입해줘 !
+      </div>
+    </div>
+
+    <div class="WhatMoney upZ-index">
+      <span class="Auction">
+        아이템 금액
+        <div v-if="Ratio <= 0">( 게임 머니 )</div>
+        <div v-if="Ratio > 0 && ExchangeRatio <= 0">1 원당 ( {{ readinput(Ratio) }} 게임 머니 )</div>
+        <div v-if="Ratio > 0 && ExchangeRatio > 0 "> {{ ExchangeRatio }} 원당 ( {{ readinput(Ratio) }} 게임 머니 ) </div>
+      </span>
+
+      <span class="CashShop">
+        캐시
+        <span v-if="isCashOption[0] == true && Persent > 0 && Cash !== 0"> ( {{ Persent }} % 할인 적용 ) </span>
+        <span v-if="isCashOption[1] == true && Persent > 0 && Cash !== 0" > ( {{ Persent }} % 추가 증정 적용 ) </span>
+        <div v-if="Persent >= 0 && isCashOption[0] == true || Persent >= 0 && isCashOption[1] == true">
+          {{ cashOption }}
+          ( {{ readinput(cashOption) }} 원 )
+        </div>
+        <div v-else>
+          ( 원 )
+        </div>
+      </span>
+    </div>
+
+    <img class="winImg" src="../assets/images/win.webp" v-if="isWin[0] == true">
+    <img class="winImgR" src="../assets/images/win.webp" v-if="isWin[1] == true">
+    <div class="WhenSell upZ-index">
+      <label>
+        <span class="AuctionSell">
+          <span v-show="Cash == 0 || Money == 0 || Ratio == 0 || isWin[0] == false">
+            아이템 판매 금액 입력
+          </span>
+          
+          <span class="ResultCalc" v-show="Cash !== 0 && Money !== 0 && Ratio !== 0 && isWin[0] == true">
+            {{ cashResult }} 원, {{ Math.abs(Math.round(compairpersentweened*10) / 10) }} % 만큼 이득이야!_
+          </span>
+
+          <div>
+            <input class="AuctionInput" maxlength='11' v-model="Money" :style="{ color : fontchange[0] }" @input="updateMoney">
+            <div v-if="Money == 0" class="UnderBar">
+              <img src="../assets/images/UnderBar.webp" >
+            </div>
+            <div>
+              <div> {{ readinput(Money) }} 머니</div>
+            </div>
+          </div>
+        </span>
+      </label>
+
+      <label class="upZ-index">
+        <span class="CashSell">
+          <span v-show="Cash == 0 || Money == 0 || Ratio == 0 || isWin[1] == false ">
+            캐시 아이템 금액 입력 
+          </span>
+
+          <span class="ResultCalc" v-show="Cash !== 0 && Money !== 0 && Ratio !== 0 && isWin[1] == true">
+            {{ cashResult }} 원, {{ Math.abs(Math.round(compairpersentweened *10) / 10) }} % 만큼 이득이야!_ 
+          </span>
+
+          <div>
+            <input class="CashInput" maxlength="10" v-model="Cash" :style="{ color : fontchange[1] }" @input="updateCash">
+            <div v-if="Cash == 0" class="UnderBar">
+                <img src="../assets/images/UnderBar.webp">
+            </div>
+            <div>
+              <div> {{ readinput(Cash) }} 원</div>
+            </div>
+          </div>
+        </span>
+      </label>
+    </div>
+
+    <!-- ---------------------------------------------------------------------------------------------------------- -->
+
+    <div class="SetBox upZ-index">
+      <div class="CashRatioInputBox">
+        <span class="CashRatio">
+          현금 거래 비율
+          <span>
+            <img class="Exchange_img" src="../assets/images/Exchange.webp" v-if="IsExchange == false" @click="updateisExchange">
+            <img class="Exchange_img" src="../assets/images/Exchange_yellow.webp" v-if="IsExchange == true" @click="updateisExchange">
+          </span>
+        </span>
+        <span>
+          <div class="Ratio"> 1 </div>
+          <div class="Colon"> : </div>
+          <input class="CashRatioInput" maxlength='9' v-model="Ratio" @input="updateRatio">
+          <img src="../assets/images/UnderBar.webp" class="CashRatioInput_Under" v-if=" Ratio == 0">
+        </span>
+        <div class="ExchangeBox"  v-if="IsExchange == true">
+          <span class="ExchangeRatio">
+            1 =
+          </span>
+          <span class="ExchangeRead">
+            ( {{ readinput(ExchangeRatio) }} 원 )
+          </span>
+          <span class="ExchangeInputBox">
+            <input class="ExchangeInput" maxlength='9' v-model="ExchangeRatio" @input="updateExchangeRatio">
+          </span>
+        </div>
+
+        <div class="ExchangeBox"  v-if="IsExchange == false">
+          <div class="MiniLogo">
+            게임머니 : 원
+          </div>
+        </div>
+      </div>
+
+      <div class="GiftCardInputBox">
+        <div class="GiftCardOption">
+          상품권 옵션 설정
+        </div>
+        <span>
+          <input class="GiftCardInput" maxlength='4' v-model="Persent" @input="updatePersent"> <div class="Persent"> % </div>
+          <img src="../assets/images/UnderBar.webp" class="GiftCardInput_Under" v-if="Persent == 0">
+        </span>
+        
+        <div class="WhatPersent">
+          <div>
+            <button class="DiscountF" @click="changeCashOption" v-if="isCashOption[0] == false">% 할인</button>
+            <button class="DiscountT" @click="changeCashOption" v-if="isCashOption[0] == true">% 할인</button>
+          </div>
+
+          <div>
+            <button class="BonusF" @click="changeCashOption('B')" v-if="isCashOption[1] == false">% 추가증정</button>
+            <button class="BonusT" @click="changeCashOption('B')" v-if="isCashOption[1] == true">% 추가증정</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
 <script lang="ts">
-import { mapGetters, mapState } from 'vuex';
+import { mapState } from 'pinia';
+import { useStore } from '../store/store'
 import { defineComponent } from 'vue';
 import gsap from 'gsap';
 
 interface ComponentData {
-  Cash: number | "",
-  Money : number | "", // 게임머니 입력창
-  Ratio: number | "", // 비율 입력창
-  Persent: any, // 할인, 추가증정 입력창
-  ExchangeRatio: number | "", // 비율 변경 입력창
+  Cash: number,
+  Ratio: number, // 비율 입력창
+  Money : number, // 게임머니 입력창
+  Persent: number, // 할인, 추가증정 입력창
+  ExchangeRatio: number, // 비율 변경 입력창
   IsExchange: boolean, // 비율 변경 여부
   isCashOption: boolean[], // 할인, 추가증정 여부
   cashResultweened: number,
@@ -18,11 +160,11 @@ interface ComponentData {
 export default defineComponent ({
   data(): ComponentData {
     return {
-      Cash: '', //게임캐시 입력창
-      Money : '', // 게임머니 입력창
-      Ratio: '', // 비율 입력창
-      Persent: '', // 할인, 추가증정 입력창
-      ExchangeRatio: '', // 비율 변경 입력창
+      Cash: 0, //게임캐시 입력창
+      Money : 0, // 게임머니 입력창
+      Ratio: 0, // 비율 입력창
+      Persent: 0, // 할인, 추가증정 입력창
+      ExchangeRatio: 0, // 비율 변경 입력창
       IsExchange: false, // 비율 변경 여부
       isCashOption: [true, false], // 할인, 추가증정 여부
       cashResultweened: 0,
@@ -31,23 +173,21 @@ export default defineComponent ({
     }
   },
   computed:{
-    ...mapState([
-      'isWin','compairpersent','fontchange',
-      ]),
-    ...mapGetters([
-      'cashResult','cashOption'
-    ])
+    ...mapState(useStore,['isWin','compairpersent','fontchange','cashOption','cashResult','readinput']),
   },
 
   methods: {
     updateMoney(){
-      this.$store.dispatch('updateMoney',this.Money)
+      const store = useStore();
+      store.updateMoney(this.Money)
     },
     updateCash(){
-      this.$store.dispatch('updateCash', this.Cash)
+      const store = useStore();
+      store.updateCash(this.Cash)
     },
     updateRatio(){
-      this.$store.dispatch('updateRatio', this.Ratio)
+      const store = useStore();
+      store.updateRatio(this.Ratio)
     },
     updatePersent(){
       if(this.Persent > 100 && this.isCashOption[0] == true){
@@ -56,19 +196,25 @@ export default defineComponent ({
       if(this.Persent > 1000 && this.isCashOption[1] == true){
         this.Persent = 1000
       }
-      this.$store.dispatch('updatePersent', this.Persent)
+      const store = useStore();
+      store.updatePersent(this.Persent)
     },
     updateisExchange(){
       this.IsExchange = !this.IsExchange
       this.ExchangeRatio = 0;
       this.updateExchangeRatio()
-      this.$store.dispatch('updateisExchange', this.IsExchange)
+
+      const store = useStore();
+      store.updateisExchange(this.IsExchange)
     },
     updateExchangeRatio(){
-      this.$store.dispatch('updateExchangeRatio', this.ExchangeRatio)
+
+      const store = useStore();
+      store.updateExchangeRatio(this.ExchangeRatio)
     },
     updateisCashOption(){
-      this.$store.dispatch('updateisCashOption', this.isCashOption)
+      const store = useStore();
+      store.updateisCashOption(this.isCashOption)
     },
     changeCashOption(payload:any) {
       if(payload == 'B'){
@@ -307,7 +453,7 @@ input[type="number"]::-webkit-inner-spin-button {
   position: absolute;
   width: 100%;
   height: 65%;
-  font-size: 165px;
+  font-size: 135px;
   color: #fff;
   font-family: "MorganiteBold";
   outline: none;
@@ -451,7 +597,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .Ratio{
   position: absolute;
   color:#fff;
-  font-size: 165px;
+  font-size: 135px;
   font-family: "MorganiteBold";
   right:25%;
   top: 55%;

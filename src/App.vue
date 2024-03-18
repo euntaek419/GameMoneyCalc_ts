@@ -73,7 +73,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style>
 @font-face{
   font-family: 'MorganiteBold';
   src : url('assets/fonts/MorganiteBold.woff');
