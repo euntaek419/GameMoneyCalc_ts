@@ -63,7 +63,7 @@ export const useStore = defineStore('useStore', {
                 state.fontchange = ["", ""]
             }
         },
-        readinput: () => (payload:number) => {
+        readinput: () => (payload:any) => {
             if(payload < 10000){
                 return payload 
             }
