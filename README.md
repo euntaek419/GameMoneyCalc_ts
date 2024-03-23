@@ -5,4 +5,4 @@
 
 ![GAMEMONEYCALC 소개](https://github.com/euntaek419/GameMoneyCalc/assets/100109284/d630439e-308f-4b51-8f6c-c629e1f39806)
 
-프로젝트의 자세한 설명 [링크](https://github.com/euntaek419/GameMoneyCalc)
+프로젝트의 자세한 내용 [[링크]](https://github.com/euntaek419/GameMoneyCalc)
