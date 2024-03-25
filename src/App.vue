@@ -1,6 +1,6 @@
 <template>
   <div class="wrap" ref="wrap">
-    <Title class="container"></Title>
+    <Title class="container" @downEvent="downEvent" @upEvent="upEvent"></Title>
     <Main class="container"></Main>
   </div>
 </template>
